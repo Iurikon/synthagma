@@ -1,4 +1,10 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# code editors
+.vscode/
+.idea/
+.vs/
+
+.claude/
 
 # dependencies
 node_modules/
