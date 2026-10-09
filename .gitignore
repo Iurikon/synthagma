@@ -46,3 +46,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# TODOS
+TODO.md
+/src/TODO.md
