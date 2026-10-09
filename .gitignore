@@ -9,7 +9,6 @@
 # dependencies
 node_modules/
 build_files/
-
 # Expo
 .expo/
 dist/
