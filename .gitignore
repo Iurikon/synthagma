@@ -5,6 +5,7 @@
 .vs/
 
 .claude/
+.wayfinder/
 
 # dependencies
 node_modules/
