@@ -77,6 +77,11 @@ export interface SectionQuiz {
   questions: QuizQuestion[];
 }
 
+// A section quiz is passed at 60% or higher. Older app versions stored quiz
+// completions without a score; those are normalized to QUIZ_SCORE_UNKNOWN.
+export const QUIZ_PASS_THRESHOLD = 60;
+export const QUIZ_SCORE_UNKNOWN = -1;
+
 export const sectionQuizzes: SectionQuiz[] = [
   {
     sectionId: 'white-keys',

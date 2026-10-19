@@ -11,7 +11,11 @@ import {
 } from "react-native";
 import GradientBackground from "../../src/components/GradientBackground";
 import ProgressBar from "../../src/components/ProgressBar";
-import { sectionQuizzes, sections } from "../../src/constants/sections";
+import {
+  QUIZ_PASS_THRESHOLD,
+  sectionQuizzes,
+  sections,
+} from "../../src/constants/sections";
 import {
   BorderRadius,
   Colors,
@@ -25,7 +29,7 @@ import { useProgress } from "../../src/context/ProgressContext";
 export default function QuizScreen() {
   const { sectionId } = useLocalSearchParams<{ sectionId: string }>();
   const router = useRouter();
-  const { state, completeLesson } = useProgress();
+  const { completeQuiz } = useProgress();
 
   const section = sections.find((s) => s.id === sectionId);
   const quiz = sectionQuizzes.find((q) => q.sectionId === sectionId);
@@ -37,6 +41,7 @@ export default function QuizScreen() {
   const [answered, setAnswered] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const question = questions[currentQ];
@@ -63,7 +68,7 @@ export default function QuizScreen() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [currentQ]);
+  }, [currentQ, attempt]);
 
   useEffect(() => {
     if (timeLeft === 0 && !answered) {
@@ -87,12 +92,19 @@ export default function QuizScreen() {
       setCurrentQ(currentQ + 1);
     } else {
       setFinished(true);
-      // Award XP for quiz completion
-      const earned = Math.round((score / questions.length) * 100);
-      if (earned > 0 && section) {
-        completeLesson(`quiz-${section.id}`, earned);
-      }
+      const pct = Math.round((score / questions.length) * 100);
+      // Always record the attempt so the lessons screen can show the best score.
+      if (section) completeQuiz(section.id, pct, pct);
     }
+  };
+
+  const restartQuiz = () => {
+    setAttempt((a) => a + 1);
+    setCurrentQ(0);
+    setScore(0);
+    setSelected(null);
+    setAnswered(false);
+    setFinished(false);
   };
 
   if (!section || questions.length === 0) {
@@ -107,7 +119,7 @@ export default function QuizScreen() {
 
   if (finished) {
     const pct = Math.round((score / questions.length) * 100);
-    const passed = pct >= 60;
+    const passed = pct >= QUIZ_PASS_THRESHOLD;
     return (
       <GradientBackground>
         <ScrollView contentContainerStyle={styles.resultContent}>
@@ -148,6 +160,17 @@ export default function QuizScreen() {
             >
               <Text style={styles.resultButtonText}>Back to Lessons</Text>
             </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.retakeButton}
+            onPress={restartQuiz}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="refresh" size={18} color={Colors.primaryGlow} />
+            <Text style={styles.retakeText}>
+              {passed ? "Retake Quiz" : "Try Again"}
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </GradientBackground>
@@ -448,5 +471,22 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: FontSize.lg,
     fontWeight: "800",
+  },
+  retakeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.sm,
+    width: "100%",
+    marginTop: Spacing.md,
+    paddingVertical: 14,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+  },
+  retakeText: {
+    color: Colors.primaryGlow,
+    fontSize: FontSize.md,
+    fontWeight: "700",
   },
 });

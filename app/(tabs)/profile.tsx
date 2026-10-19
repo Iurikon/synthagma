@@ -11,6 +11,13 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GradientBackground from "../../src/components/GradientBackground";
 import ProgressBar from "../../src/components/ProgressBar";
+import { lessons } from "../../src/constants/lessons";
+import {
+  QUIZ_PASS_THRESHOLD,
+  QUIZ_SCORE_UNKNOWN,
+  sectionQuizzes,
+} from "../../src/constants/sections";
+import { songs } from "../../src/constants/songs";
 import {
   BorderRadius,
   Colors,
@@ -36,8 +43,20 @@ export default function ProfileScreen() {
   const totalXP = state.xp;
   const level = Math.floor(totalXP / 200) + 1;
   const xpToNext = totalXP % 200;
-  const totalLessons = 10;
-  const totalSongs = 6;
+  const completedLessonCount = lessons.filter((lesson) =>
+    state.completedLessons.includes(lesson.id),
+  ).length;
+  const totalLessons = lessons.length;
+  const completedSongCount = songs.filter((song) =>
+    state.completedSongs.includes(song.id),
+  ).length;
+  const totalSongs = songs.length;
+  const passedQuizCount = sectionQuizzes.filter(
+    (quiz) =>
+      (state.quizScores[quiz.sectionId] ?? QUIZ_SCORE_UNKNOWN) >=
+      QUIZ_PASS_THRESHOLD,
+  ).length;
+  const halfwayPoint = Math.ceil(totalLessons / 2);
 
   return (
     <GradientBackground>
@@ -85,7 +104,7 @@ export default function ProfileScreen() {
                 color={Colors.success}
               />
               <Text style={styles.statValue}>
-                {state.completedLessons.length}/{totalLessons}
+                {completedLessonCount}/{totalLessons}
               </Text>
               <Text style={styles.statLabel}>Lessons</Text>
             </LinearGradient>
@@ -101,7 +120,7 @@ export default function ProfileScreen() {
                 color={Colors.primaryLight}
               />
               <Text style={styles.statValue}>
-                {state.completedSongs.length}/{totalSongs}
+                {completedSongCount}/{totalSongs}
               </Text>
               <Text style={styles.statLabel}>Songs</Text>
             </LinearGradient>
@@ -126,6 +145,33 @@ export default function ProfileScreen() {
               <Text style={styles.statLabel}>Total XP</Text>
             </LinearGradient>
           </View>
+        </View>
+
+        {/* Section quizzes */}
+        <Text style={styles.sectionTitle}>Section Quizzes</Text>
+        <View style={styles.quizCard}>
+          <LinearGradient colors={Gradients.bgCard} style={styles.quizInner}>
+            <View style={styles.quizRow}>
+              <Ionicons
+                name="ribbon"
+                size={24}
+                color={Colors.primaryGlow}
+              />
+              <Text style={styles.quizValue}>
+                {passedQuizCount}/{sectionQuizzes.length}
+              </Text>
+              <Text style={styles.quizLabel}>quizzes passed</Text>
+            </View>
+            <ProgressBar
+              progress={
+                sectionQuizzes.length
+                  ? passedQuizCount / sectionQuizzes.length
+                  : 0
+              }
+              variant="progress"
+              height={8}
+            />
+          </LinearGradient>
         </View>
 
         {/* Hearts */}
@@ -166,7 +212,7 @@ export default function ProfileScreen() {
             colors={Gradients.bgCard}
             style={styles.achievementInner}
           >
-            {state.completedLessons.length >= 1 && (
+            {completedLessonCount >= 1 && (
               <View style={styles.achievementRow}>
                 <Ionicons
                   name="musical-note"
@@ -178,15 +224,15 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             )}
-            {state.completedLessons.length >= 5 && (
+            {completedLessonCount >= halfwayPoint && (
               <View style={styles.achievementRow}>
                 <Ionicons name="school" size={20} color={Colors.primaryGlow} />
                 <Text style={styles.achievementText}>
-                  Halfway There — 5 lessons done!
+                  Halfway There — {halfwayPoint} lessons done!
                 </Text>
               </View>
             )}
-            {state.completedLessons.length >= 10 && (
+            {completedLessonCount >= totalLessons && (
               <View style={styles.achievementRow}>
                 <Ionicons name="trophy" size={20} color={Colors.xp} />
                 <Text style={styles.achievementText}>
@@ -194,13 +240,22 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             )}
+            {sectionQuizzes.length > 0 &&
+              passedQuizCount === sectionQuizzes.length && (
+                <View style={styles.achievementRow}>
+                  <Ionicons name="ribbon" size={20} color={Colors.success} />
+                  <Text style={styles.achievementText}>
+                    Quiz Master — All section quizzes passed!
+                  </Text>
+                </View>
+              )}
             {state.streak >= 7 && (
               <View style={styles.achievementRow}>
                 <Ionicons name="flame" size={20} color={Colors.streak} />
                 <Text style={styles.achievementText}>7-Day Streak!</Text>
               </View>
             )}
-            {state.completedLessons.length === 0 && (
+            {completedLessonCount === 0 && (
               <Text style={styles.noAchievements}>
                 Complete lessons to earn achievements!
               </Text>
@@ -321,6 +376,32 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: FontSize.xs,
     marginTop: 2,
+  },
+  quizCard: {
+    borderRadius: BorderRadius.lg,
+    overflow: "hidden",
+    marginBottom: Spacing.lg,
+  },
+  quizInner: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.bgSurface,
+    gap: Spacing.sm,
+  },
+  quizRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  quizValue: {
+    color: Colors.text,
+    fontSize: FontSize.xl,
+    fontWeight: "800",
+  },
+  quizLabel: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
   },
   sectionTitle: {
     color: Colors.text,

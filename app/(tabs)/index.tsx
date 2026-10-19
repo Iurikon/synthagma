@@ -38,6 +38,9 @@ export default function HomeScreen() {
   const nextLesson = lessons.find(
     (l) => !state.completedLessons.includes(l.id),
   );
+  const completedLessonCount = lessons.filter((l) =>
+    state.completedLessons.includes(l.id),
+  ).length;
   const totalXP = state.xp;
   const level = Math.floor(totalXP / 200) + 1;
   const xpToNext = totalXP % 200;
@@ -168,7 +171,7 @@ export default function HomeScreen() {
           <View style={styles.statCard}>
             <LinearGradient colors={Gradients.bgCard} style={styles.statInner}>
               <Text style={styles.statNumber}>
-                {state.completedLessons.length}
+                {completedLessonCount}
               </Text>
               <Text style={styles.statLabel}>Lessons Done</Text>
             </LinearGradient>

@@ -39,7 +39,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "build:web": "expo export -p web",
-    "deploy:web": "npm run build:web && npx --yes firebase-tools deploy --only hosting"
+    "deploy:rules": "npx --yes firebase-tools deploy --only firestore:rules",
+    "deploy:web": "npm run build:web && npx --yes firebase-tools deploy --only hosting,firestore:rules"
   },
   "private": true
 }
